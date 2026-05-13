@@ -4,7 +4,10 @@ O **Módulo 05 — Assistente Jurídico da Licitação** tem como objetivo autom
 
 A proposta do módulo surge a partir da necessidade de agilizar atividades que atualmente demandam longos períodos de análise documental, organização de informações e construção manual de peças jurídicas. Processos como elaboração de impugnações, pedidos de esclarecimentos, recursos administrativos e requerimentos contratuais frequentemente exigem a leitura detalhada de editais, atas, contratos e decisões administrativas, tornando o fluxo operacional lento, repetitivo e suscetível a falhas.
 
-Além do tempo elevado necessário para produção dessas manifestações, existe também a complexidade técnica envolvida na interpretação das regras licitatórias, legislação aplicável e definição das teses jurídicas adequadas para cada situação. Nesse contexto, o sistema atua como um **assistente jurídico inteligente**, auxiliando o usuário na construção das peças jurídicas por meio de fluxos guiados, categorização de teses jurídicas e geração estruturada de documentos administrativos, buscando reduzir retrabalho, acelerar a tomada de decisão e otimizar todo o processo jurídico licitatório.
+Além do tempo elevado necessário para produção dessas manifestações, existe também a complexidade técnica envolvida na interpretação das regras licitatórias, legislação aplicável e definição das teses jurídicas adequadas para cada situação.
+
+Nesse contexto, o sistema atua como um **assistente jurídico inteligente**, auxiliando o usuário na construção das peças jurídicas por meio de fluxos guiados, categorização de teses jurídicas e geração estruturada de documentos administrativos, buscando reduzir retrabalho, acelerar a tomada de decisão e otimizar todo o processo jurídico licitatório.
+
 ---
 
 # Objetivos do Módulo
