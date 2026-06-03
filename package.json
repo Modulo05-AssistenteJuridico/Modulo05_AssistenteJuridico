@@ -1,0 +1,19 @@
+{
+  "name": "assistente-juridico",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "cypress": "^13.0.0"
+  }
+}
