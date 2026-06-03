@@ -1,0 +1,28 @@
+name: Cypress Tests
+
+# Define que o teste vai rodar quando houver push ou pull request para a branch principal
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Baixa o código do repositório
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # 2. Roda a Action oficial do Cypress para projetos Next.js
+      - name: Rodar Cypress
+        uses: cypress-io/github-action@v6
+        with:
+          # Faz o build do Next.js
+          build: npm run build
+          # Inicia o projeto localmente no servidor do GitHub
+          start: npm start
+          # Diz pro Cypress esperar o site carregar na porta 3000 antes de testar
+          wait-on: 'http://localhost:3000'
