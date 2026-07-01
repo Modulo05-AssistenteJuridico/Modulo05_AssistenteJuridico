@@ -127,5 +127,16 @@ export interface TeseSugerida {
   titulo: string;
   objetivo: string;
   relevancia: Relevancia;
-  fundamentacao: string;
+  fundamentacao?: string;
+}
+
+export interface DocumentoGerado {
+  id: string;
+  tipoNome: string;
+  faseNome: string | null;
+  tema: string | null;
+  teseTitulo: string | null;
+  status: StatusPeca;
+  nomeArquivo: string | null;
+  atualizadoEm: string;
 }
