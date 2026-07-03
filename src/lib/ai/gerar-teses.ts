@@ -41,10 +41,10 @@ function montarContents(
   documentos?: DocumentoIA[],
 ): string | Part[] {
   if (!documentos || documentos.length === 0) return prompt;
-  const partes: Part[] = [{ text: prompt }];
-  for (const doc of documentos) {
-    partes.push({ inlineData: { mimeType: doc.mimeType, data: doc.data } });
-  }
+  const partes: Part[] = documentos.map((doc) => ({
+    inlineData: { mimeType: doc.mimeType, data: doc.data },
+  }));
+  partes.push({ text: prompt });
   return partes;
 }
 
@@ -119,9 +119,8 @@ Responda em português, somente com o texto da fundamentação, sem título, sem
 
 const TENTATIVAS = 2;
 
-function ehTransitorio(erro: unknown): boolean {
-  const status = (erro as { status?: number } | null)?.status;
-  return status === 429 || status === 500 || status === 503;
+function statusDoErro(erro: unknown): number | undefined {
+  return (erro as { status?: number } | null)?.status;
 }
 
 export async function gerarComFallback<T>(
@@ -129,16 +128,20 @@ export async function gerarComFallback<T>(
 ): Promise<T> {
   const modelos = Array.from(new Set([GEMINI_MODEL, GEMINI_MODEL_FALLBACK]));
   let ultimoErro: unknown = new Error("Falha ao gerar conteúdo com a IA.");
-  for (const modelo of modelos) {
+  for (let indice = 0; indice < modelos.length; indice++) {
+    const modelo = modelos[indice];
+    const ultimoModelo = indice === modelos.length - 1;
     for (let tentativa = 0; tentativa < TENTATIVAS; tentativa++) {
       try {
         return await executar(modelo);
       } catch (erro) {
         ultimoErro = erro;
-        if (!ehTransitorio(erro)) throw erro;
+        const status = statusDoErro(erro);
+        if (status !== 429 && status !== 500 && status !== 503) throw erro;
+        if (status === 429 && !ultimoModelo) break;
         if (tentativa < TENTATIVAS - 1) {
           await new Promise((resolve) =>
-            setTimeout(resolve, 1500 * (tentativa + 1)),
+            setTimeout(resolve, status === 429 ? 2000 : 500),
           );
         }
       }

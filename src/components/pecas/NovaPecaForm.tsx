@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Contrato, Licitacao } from "@/types/external";
 import { Relevancia, TeseSugerida, TipoPecaJuridica } from "@/types/database";
@@ -63,9 +63,16 @@ export function NovaPecaForm({
   const [teses, setTeses] = useState<TeseSugerida[] | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [selecionada, setSelecionada] = useState<number | null>(null);
-  const [carregandoFund, setCarregandoFund] = useState<number | null>(null);
+  const [fundCarregando, setFundCarregando] = useState<
+    Record<number, boolean>
+  >({});
   const [criando, setCriando] = useState(false);
   const [erroCriar, setErroCriar] = useState<string | null>(null);
+  const fundEmAndamento = useRef<
+    Record<number, { assinatura: string; promessa: Promise<string> }>
+  >({});
+  const fundAssinaturas = useRef<Record<number, string>>({});
+  const geracaoTeses = useRef(0);
 
   const tipoSelecionado = tipos.find((t) => t.id === tipoId);
   const licitacaoSelecionada = licitacoes.find((l) => l.id === licitacaoId);
@@ -73,7 +80,7 @@ export function NovaPecaForm({
   const contratoSelecionado = precisaContrato
     ? contratos.find((c) => c.id === contratoId)
     : undefined;
-  const podeSugerir = tema.trim().length > 0 && !carregando;
+  const podeSugerir = tema.trim().length > 0 && !carregando && !criando;
   const teseEscolhida =
     selecionada !== null && teses ? teses[selecionada] : null;
   const podeCriar = teseEscolhida !== null && tipoId.length > 0 && !criando;
@@ -99,49 +106,87 @@ export function NovaPecaForm({
     };
   }
 
+  function assinaturaContexto(): string {
+    return JSON.stringify([
+      tema.trim(),
+      tipoId,
+      licitacaoId,
+      precisaContrato ? contratoId : "",
+    ]);
+  }
+
   async function handleSugerir() {
     setCarregando(true);
     setErroCriar(null);
     setSelecionada(null);
-    setCarregandoFund(null);
+    setFundCarregando({});
     setTeses(null);
-    const resultado = await gerarTeses(contextoFundamentacao());
-    setTeses(ordenarPorRelevancia(resultado));
+    geracaoTeses.current += 1;
+    fundEmAndamento.current = {};
+    fundAssinaturas.current = {};
+    const resultado = ordenarPorRelevancia(
+      await gerarTeses(contextoFundamentacao()),
+    );
+    setTeses(resultado);
     setCarregando(false);
+    if (resultado.length > 0) iniciarFundamentacao(0, resultado);
   }
 
-  async function carregarFundamentacao(indice: number) {
-    if (!teses) return;
-    const alvo = teses[indice];
-    if (!alvo || alvo.fundamentacao || carregandoFund === indice) return;
-    setCarregandoFund(indice);
-    const texto = await gerarFundamentacao({
+  function iniciarFundamentacao(
+    indice: number,
+    lista: TeseSugerida[] | null = teses,
+  ): Promise<string> | null {
+    if (!lista) return null;
+    const alvo = lista[indice];
+    if (!alvo) return null;
+    const assinatura = assinaturaContexto();
+    const assinaturaRegistrada = fundAssinaturas.current[indice];
+    if (
+      alvo.fundamentacao &&
+      (assinaturaRegistrada === undefined ||
+        assinaturaRegistrada === assinatura)
+    ) {
+      return Promise.resolve(alvo.fundamentacao);
+    }
+    const emAndamento = fundEmAndamento.current[indice];
+    if (emAndamento && emAndamento.assinatura === assinatura) {
+      return emAndamento.promessa;
+    }
+    const geracao = geracaoTeses.current;
+    setFundCarregando((atual) => ({ ...atual, [indice]: true }));
+    const promessa = gerarFundamentacao({
       ...contextoFundamentacao(),
       titulo: alvo.titulo,
       objetivo: alvo.objetivo,
+    }).then((texto) => {
+      if (geracaoTeses.current !== geracao) return texto;
+      if (fundEmAndamento.current[indice]?.promessa !== promessa) return texto;
+      delete fundEmAndamento.current[indice];
+      setFundCarregando((atual) => ({ ...atual, [indice]: false }));
+      if (texto) {
+        fundAssinaturas.current[indice] = assinatura;
+        setTeses((atual) =>
+          atual
+            ? atual.map((t, i) =>
+                i === indice ? { ...t, fundamentacao: texto } : t,
+              )
+            : atual,
+        );
+      }
+      return texto;
     });
-    setTeses((atual) =>
-      atual
-        ? atual.map((t, i) =>
-            i === indice ? { ...t, fundamentacao: texto } : t,
-          )
-        : atual,
-    );
-    setCarregandoFund(null);
+    fundEmAndamento.current[indice] = { assinatura, promessa };
+    return promessa;
   }
 
   async function handleCriar() {
-    if (!teseEscolhida || !tipoId) return;
+    if (!teseEscolhida || !tipoId || selecionada === null) return;
     setCriando(true);
     setErroCriar(null);
     try {
-      let fundamentacao = teseEscolhida.fundamentacao;
+      let fundamentacao = (await iniciarFundamentacao(selecionada)) ?? "";
       if (!fundamentacao) {
-        fundamentacao = await gerarFundamentacao({
-          ...contextoFundamentacao(),
-          titulo: teseEscolhida.titulo,
-          objetivo: teseEscolhida.objetivo,
-        });
+        fundamentacao = teseEscolhida.fundamentacao ?? "";
       }
       const resposta = await fetch("/api/pecas", {
         method: "POST",
@@ -317,11 +362,12 @@ export function NovaPecaForm({
                       key={i}
                       tese={t}
                       selecionada={selecionada === i}
-                      onSelecionar={() =>
-                        setSelecionada((atual) => (atual === i ? null : i))
-                      }
-                      onAbrir={() => carregarFundamentacao(i)}
-                      carregandoFundamentacao={carregandoFund === i}
+                      onSelecionar={() => {
+                        setSelecionada((atual) => (atual === i ? null : i));
+                        if (selecionada !== i) iniciarFundamentacao(i);
+                      }}
+                      onAbrir={() => iniciarFundamentacao(i)}
+                      carregandoFundamentacao={!!fundCarregando[i]}
                     />
                   ))}
                 </div>

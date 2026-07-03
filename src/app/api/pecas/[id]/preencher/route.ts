@@ -31,17 +31,21 @@ export async function POST(
   }
 
   try {
-    const buf = await baixarModelo(arquivo);
-    const xml = await lerDocumentoXml(buf);
-    const { campos } = parsearDocumento(xml);
-    const [edital, contrato, empresa] = await Promise.all([
-      detalhe.peca.id_edital_m4
-        ? buscarEditalPorId(detalhe.peca.id_edital_m4)
-        : Promise.resolve(null),
-      detalhe.peca.id_contrato_m8
-        ? buscarContratoPorId(detalhe.peca.id_contrato_m8)
-        : Promise.resolve(null),
-      buscarEmpresa(),
+    const [{ campos }, [edital, contrato, empresa]] = await Promise.all([
+      (async () => {
+        const buf = await baixarModelo(arquivo);
+        const xml = await lerDocumentoXml(buf);
+        return parsearDocumento(xml);
+      })(),
+      Promise.all([
+        detalhe.peca.id_edital_m4
+          ? buscarEditalPorId(detalhe.peca.id_edital_m4)
+          : Promise.resolve(null),
+        detalhe.peca.id_contrato_m8
+          ? buscarContratoPorId(detalhe.peca.id_contrato_m8)
+          : Promise.resolve(null),
+        buscarEmpresa(),
+      ]),
     ]);
     const documentos = await baixarDocumentosEdital(edital?.docs);
     const valores = await preencherCamposIA({

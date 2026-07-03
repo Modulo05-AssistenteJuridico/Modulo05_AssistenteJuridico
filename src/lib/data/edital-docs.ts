@@ -28,11 +28,62 @@ function separarBucketCaminho(valor: string): { bucket: string; path: string } |
   return { bucket, path };
 }
 
+const TTL_CACHE_DOCS_MS = 10 * 60 * 1000;
+const MAX_ENTRADAS_CACHE = 4;
+
+interface EntradaCacheDocs {
+  expira: number;
+  promessa: Promise<DocumentoIA[]>;
+}
+
+function cacheDocs(): Map<string, EntradaCacheDocs> {
+  const escopo = globalThis as typeof globalThis & {
+    __mod5CacheDocsEdital?: Map<string, EntradaCacheDocs>;
+  };
+  escopo.__mod5CacheDocsEdital ??= new Map();
+  return escopo.__mod5CacheDocsEdital;
+}
+
 export async function baixarDocumentosEdital(
   docs: string[] | undefined | null,
 ): Promise<DocumentoIA[]> {
   if (!docs || docs.length === 0) return [];
 
+  const chave = JSON.stringify(docs.slice(0, MAX_DOCS));
+  const cache = cacheDocs();
+  const agora = Date.now();
+  const entrada = cache.get(chave);
+  if (entrada && entrada.expira > agora) {
+    cache.delete(chave);
+    cache.set(chave, entrada);
+    return entrada.promessa;
+  }
+
+  cache.delete(chave);
+  if (cache.size >= MAX_ENTRADAS_CACHE) {
+    const maisAntiga = cache.keys().next().value;
+    if (maisAntiga !== undefined) cache.delete(maisAntiga);
+  }
+
+  const promessa = baixarDocumentosDoStorage(docs);
+  cache.set(chave, { expira: agora + TTL_CACHE_DOCS_MS, promessa });
+  try {
+    const resultado = await promessa;
+    if (resultado.length === 0 && cache.get(chave)?.promessa === promessa) {
+      cache.delete(chave);
+    }
+    return resultado;
+  } catch (erro) {
+    if (cache.get(chave)?.promessa === promessa) {
+      cache.delete(chave);
+    }
+    throw erro;
+  }
+}
+
+async function baixarDocumentosDoStorage(
+  docs: string[],
+): Promise<DocumentoIA[]> {
   const supabase = createSupabaseAdminClient();
   const resultado: DocumentoIA[] = [];
   let total = 0;

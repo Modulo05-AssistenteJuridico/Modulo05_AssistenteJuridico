@@ -117,10 +117,10 @@ Regras:
 - NÃO invente dados que não estejam no contexto (datas, número do processo/edital, nome do representante legal, RG, CPF, endereço completo se não constar nos detalhes da empresa); nesses casos, omita o campo da resposta.
 - Responda em português e retorne apenas os campos que você efetivamente preencheu, no formato do schema (lista de {id, valor}).`;
 
-  const partes: Part[] = [{ text: prompt }];
-  for (const doc of params.documentos ?? []) {
-    partes.push({ inlineData: { mimeType: doc.mimeType, data: doc.data } });
-  }
+  const partes: Part[] = (params.documentos ?? []).map((doc) => ({
+    inlineData: { mimeType: doc.mimeType, data: doc.data },
+  }));
+  partes.push({ text: prompt });
 
   const base = {
     contents: partes,

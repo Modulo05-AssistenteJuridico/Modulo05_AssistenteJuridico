@@ -56,13 +56,56 @@ export function arquivoModeloParaTipo(tipo: {
   return null;
 }
 
-export async function baixarModelo(arquivo: string): Promise<Buffer> {
+const TTL_CACHE_MODELO_MS = 10 * 60 * 1000;
+
+interface EntradaCacheModelo {
+  expira: number;
+  promessa: Promise<Buffer>;
+}
+
+function cacheModelos(): Map<string, EntradaCacheModelo> {
+  const escopo = globalThis as typeof globalThis & {
+    __mod5CacheModelos?: Map<string, EntradaCacheModelo>;
+  };
+  escopo.__mod5CacheModelos ??= new Map();
+  return escopo.__mod5CacheModelos;
+}
+
+async function baixarModeloDoStorage(arquivo: string): Promise<Buffer> {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase.storage
     .from(BUCKET)
     .download(`modelos/${arquivo}`);
   if (error || !data) throw new Error(`Modelo não encontrado: ${arquivo}`);
-  return Buffer.from(await data.arrayBuffer());
+  const bytes = Buffer.from(await data.arrayBuffer());
+  if (bytes.length === 0) {
+    throw new Error(`Download vazio do modelo: ${arquivo}`);
+  }
+  return bytes;
+}
+
+export async function baixarModelo(arquivo: string): Promise<Buffer> {
+  const cache = cacheModelos();
+  const agora = Date.now();
+  const entrada = cache.get(arquivo);
+  if (entrada && entrada.expira > agora) {
+    try {
+      const existente = await entrada.promessa;
+      if (existente.length > 0) return existente;
+    } catch {}
+    if (cache.get(arquivo) === entrada) cache.delete(arquivo);
+  }
+
+  const promessa = baixarModeloDoStorage(arquivo);
+  cache.set(arquivo, { expira: agora + TTL_CACHE_MODELO_MS, promessa });
+  try {
+    return await promessa;
+  } catch (erro) {
+    if (cache.get(arquivo)?.promessa === promessa) {
+      cache.delete(arquivo);
+    }
+    throw erro;
+  }
 }
 
 export async function lerDocumentoXml(buf: Buffer): Promise<string> {

@@ -46,29 +46,40 @@ export async function criarPeca(input: CriarPecaInput): Promise<PecaCriada> {
 
   const supabase = createSupabaseAdminClient();
 
-  const { data: tipo, error: erroTipo } = await supabase
-    .from("mod5_tipo_peca_juridica")
-    .select("id, id_fase")
-    .eq("id", input.tipoId)
-    .single();
-  if (erroTipo || !tipo) {
-    throw new Error("Tipo de peça não encontrado.");
-  }
+  const [tipoRes, teseRes] = await Promise.all([
+    supabase
+      .from("mod5_tipo_peca_juridica")
+      .select("id, id_fase")
+      .eq("id", input.tipoId)
+      .single(),
+    supabase
+      .from("mod5_tese_juridica")
+      .insert({
+        titulo: input.tese.titulo,
+        objetivo: input.tese.objetivo
+          ? input.tese.objetivo.slice(0, 50)
+          : null,
+        relevancia: input.tese.relevancia,
+        fundamentacao: input.tese.fundamentacao,
+      })
+      .select("id")
+      .single(),
+  ]);
 
-  const { data: tese, error: erroTese } = await supabase
-    .from("mod5_tese_juridica")
-    .insert({
-      titulo: input.tese.titulo,
-      objetivo: input.tese.objetivo
-        ? input.tese.objetivo.slice(0, 50)
-        : null,
-      relevancia: input.tese.relevancia,
-      fundamentacao: input.tese.fundamentacao,
-    })
-    .select("id")
-    .single();
-  if (erroTese || !tese) {
+  const tipo = tipoRes.data;
+  const tese = teseRes.data;
+  if (teseRes.error || !tese) {
     throw new Error("Falha ao gravar a tese.");
+  }
+  if (tipoRes.error || !tipo) {
+    const { error: erroLimpeza } = await supabase
+      .from("mod5_tese_juridica")
+      .delete()
+      .eq("id", tese.id);
+    if (erroLimpeza) {
+      console.error("Falha ao remover tese órfã:", tese.id, erroLimpeza);
+    }
+    throw new Error("Tipo de peça não encontrado.");
   }
 
   const idEditalM4 =
@@ -97,11 +108,23 @@ export async function criarPeca(input: CriarPecaInput): Promise<PecaCriada> {
     .single();
 
   if (erroPeca || !peca) {
-    await supabase.from("mod5_tese_juridica").delete().eq("id", tese.id);
+    const { error: erroLimpeza } = await supabase
+      .from("mod5_tese_juridica")
+      .delete()
+      .eq("id", tese.id);
+    if (erroLimpeza) {
+      console.error("Falha ao remover tese órfã:", tese.id, erroLimpeza);
+    }
     throw new Error("Falha ao gravar a peça.");
   }
 
   return { id: peca.id };
+}
+
+function normalizarRelacao<T>(rel: unknown): T | null {
+  if (!rel) return null;
+  const obj = Array.isArray(rel) ? rel[0] : rel;
+  return (obj as T) ?? null;
 }
 
 export async function buscarPecaPorId(id: string): Promise<PecaDetalhe | null> {
@@ -109,38 +132,22 @@ export async function buscarPecaPorId(id: string): Promise<PecaDetalhe | null> {
 
   const supabase = createSupabaseAdminClient();
 
-  const { data: peca, error } = await supabase
+  const { data, error } = await supabase
     .from("mod5_peca_juridica")
-    .select("*")
+    .select(
+      "*, fase:mod5_fase_licitacao(*), tipo:mod5_tipo_peca_juridica(*), tese:mod5_tese_juridica(*)",
+    )
     .eq("id", id)
     .single();
-  if (error || !peca) return null;
+  if (error || !data) return null;
 
-  const [faseRes, tipoRes, teseRes] = await Promise.all([
-    supabase
-      .from("mod5_fase_licitacao")
-      .select("*")
-      .eq("id", peca.id_fase)
-      .single(),
-    supabase
-      .from("mod5_tipo_peca_juridica")
-      .select("*")
-      .eq("id", peca.id_tipo)
-      .single(),
-    peca.id_tese
-      ? supabase
-          .from("mod5_tese_juridica")
-          .select("*")
-          .eq("id", peca.id_tese)
-          .single()
-      : Promise.resolve({ data: null }),
-  ]);
+  const { fase, tipo, tese, ...peca } = data as Record<string, unknown>;
 
   return {
-    peca: peca as PecaJuridica,
-    fase: (faseRes.data as FaseLicitacao) ?? null,
-    tipo: (tipoRes.data as TipoPecaJuridica) ?? null,
-    tese: (teseRes.data as TeseJuridica) ?? null,
+    peca: peca as unknown as PecaJuridica,
+    fase: normalizarRelacao<FaseLicitacao>(fase),
+    tipo: normalizarRelacao<TipoPecaJuridica>(tipo),
+    tese: normalizarRelacao<TeseJuridica>(tese),
   };
 }
 

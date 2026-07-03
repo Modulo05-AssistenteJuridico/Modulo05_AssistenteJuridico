@@ -29,7 +29,7 @@ export function TeseCard({
   function alternar() {
     const proximo = !aberto;
     setAberto(proximo);
-    if (proximo && !tese.fundamentacao) onAbrir?.();
+    if (proximo) onAbrir?.();
   }
 
   return (
