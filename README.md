@@ -89,3 +89,12 @@ O módulo também irá operar integrado a outras partes da plataforma.
 - **Módulo 04:** análise e resumo automatizado de editais;
 - **Módulo 06:** calendário e monitoramento de prazos;
 - **Módulo 08:** gestão contratual e acompanhamento de contratos.
+
+---
+
+# Documentação Técnica
+
+- [Integração com outros módulos](documentos/README-integracao-modulos.md) — como o M5 busca editais (M4), contratos (M8) e dados da empresa para popular o documento jurídico;
+- [Sugestão de teses jurídicas e IA](documentos/README-sugestao-teses-ia.md) — motor de IA (Google Gemini), busca de precedentes e geração do conteúdo final;
+- [Banco de dados](documentos/README-banco-de-dados.md) — tabelas `mod5_*`, relações, índices, triggers e RLS;
+- [Arquitetura e fluxo completo](documentos/README-arquitetura-fluxo.md) — estrutura do código e o passo a passo da criação da peça até o download.

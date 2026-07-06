@@ -98,7 +98,7 @@ async function baixarDocumentosDoStorage(
         .from(alvo.bucket)
         .download(alvo.path);
       if (error || !data) continue;
-      const bytes = Buffer.from(await data.arrayBuffer());
+      const bytes = Buffer.from(new Uint8Array(await data.arrayBuffer()));
       if (bytes.length === 0) continue;
       if (total + bytes.length > MAX_TOTAL_BYTES) continue;
       total += bytes.length;

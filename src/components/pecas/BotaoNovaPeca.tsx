@@ -17,7 +17,14 @@ export function BotaoNovaPeca() {
       {pendente && (
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
       )}
-      {pendente ? "Carregando..." : "Criar nova peça"}
+      {pendente ? (
+        "Carregando..."
+      ) : (
+        <>
+          <span className="text-xl leading-none">+</span>
+          <span>Criar nova peça</span>
+        </>
+      )}
     </button>
   );
 }

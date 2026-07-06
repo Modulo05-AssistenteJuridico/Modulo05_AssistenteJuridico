@@ -77,7 +77,7 @@ async function baixarModeloDoStorage(arquivo: string): Promise<Buffer> {
     .from(BUCKET)
     .download(`modelos/${arquivo}`);
   if (error || !data) throw new Error(`Modelo não encontrado: ${arquivo}`);
-  const bytes = Buffer.from(await data.arrayBuffer());
+  const bytes = Buffer.from(new Uint8Array(await data.arrayBuffer()));
   if (bytes.length === 0) {
     throw new Error(`Download vazio do modelo: ${arquivo}`);
   }
@@ -91,7 +91,7 @@ export async function baixarModelo(arquivo: string): Promise<Buffer> {
   if (entrada && entrada.expira > agora) {
     try {
       const existente = await entrada.promessa;
-      if (existente.length > 0) return existente;
+      if (existente.length > 0) return Buffer.from(existente);
     } catch {}
     if (cache.get(arquivo) === entrada) cache.delete(arquivo);
   }
@@ -99,7 +99,7 @@ export async function baixarModelo(arquivo: string): Promise<Buffer> {
   const promessa = baixarModeloDoStorage(arquivo);
   cache.set(arquivo, { expira: agora + TTL_CACHE_MODELO_MS, promessa });
   try {
-    return await promessa;
+    return Buffer.from(await promessa);
   } catch (erro) {
     if (cache.get(arquivo)?.promessa === promessa) {
       cache.delete(arquivo);
@@ -233,9 +233,14 @@ export function parsearDocumento(xml: string): ModeloParseado {
         tamanho: runTamanho(r),
       };
       if (ehEditavel(negrito, realce, sublinhado, texto)) {
-        runs.push({ ...base, campoId });
-        campos.push({ id: campoId, original: texto, realce });
+        const inicio = texto.match(/^\s*/)?.[0] ?? "";
+        const fim = texto.match(/\s*$/)?.[0] ?? "";
+        const nucleo = texto.slice(inicio.length, texto.length - fim.length);
+        if (inicio) runs.push({ ...base, texto: inicio, campoId: null });
+        runs.push({ ...base, texto: nucleo, campoId });
+        campos.push({ id: campoId, original: nucleo, realce });
         campoId++;
+        if (fim) runs.push({ ...base, texto: fim, campoId: null });
       } else {
         runs.push({ ...base, campoId: null });
       }
@@ -259,18 +264,22 @@ export function aplicarValores(
     const sublinhado = runSublinhado(run);
     if (!ehEditavel(negrito, realce, sublinhado, texto)) return run;
     const id = campoId++;
+    const inicio = texto.match(/^\s*/)?.[0] ?? "";
+    const fim = texto.match(/\s*$/)?.[0] ?? "";
+    const nucleo = texto.slice(inicio.length, texto.length - fim.length);
     const novo = valores[id];
 
     let novoRun = run
       .replace(/<w:b(\s[^>]*)?\/>/g, "")
       .replace(/<w:bCs(\s[^>]*)?\/>/g, "");
 
-    if (novo !== undefined && novo !== texto) {
+    if (novo !== undefined && novo !== nucleo) {
+      const completo = inicio + novo + fim;
       let primeiro = true;
       novoRun = novoRun.replace(/<w:t\b[^>]*>[\s\S]*?<\/w:t>/g, () => {
         if (primeiro) {
           primeiro = false;
-          return `<w:t xml:space="preserve">${escapar(novo)}</w:t>`;
+          return `<w:t xml:space="preserve">${escapar(completo)}</w:t>`;
         }
         return `<w:t xml:space="preserve"></w:t>`;
       });

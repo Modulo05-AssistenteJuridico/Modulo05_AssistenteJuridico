@@ -211,7 +211,10 @@ export async function baixarDocumentoPeca(
     .download(ultimo.url);
   if (erroDownload || !data) return null;
 
-  return { arquivo: Buffer.from(await data.arrayBuffer()), nome: ultimo.nome };
+  return {
+    arquivo: Buffer.from(new Uint8Array(await data.arrayBuffer())),
+    nome: ultimo.nome,
+  };
 }
 
 export async function excluirPeca(id: string): Promise<void> {
