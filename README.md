@@ -6,6 +6,8 @@
 
 ## Documentação Técnica
 
+Toda a documentação técnica desenvolvida durante o projeto encontra-se organizada e disponível na pasta **documentos** do repositório.
+
 | Documento | Descrição |
 |-----------|-----------|
 | [Integração com outros módulos](documentos/bancoDeDados/integracoes_mod05.md) | Como o Módulo 05 busca editais (Módulo 04), contratos (Módulo 08) e dados da empresa para compor automaticamente a peça jurídica. |
