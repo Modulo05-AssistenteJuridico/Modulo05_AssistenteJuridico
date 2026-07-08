@@ -4,8 +4,6 @@ Resumo da estrutura de banco de dados (PostgreSQL) baseada no script de origem `
 
 ## 📌 Padrões e Relacionamentos
 
-* **Padrão de Chaves (PK):** Utilização de `uuid` com geração automática `gen_random_uuid()`.
-* **Segurança:** Políticas de RLS habilitadas em todas as tabelas.
 * **Tabela Central:** A tabela `mod5_peca_juridica` concentra as chaves estrangeiras de contexto.
 * **Tabelas Independentes:** A tabela `mod5_licitacoes_base` não possui FKs, atuando como base isolada de precedentes (RAG).
 * **Cross-Módulo:** Colunas que referenciam outros módulos (ex: `id_edital_m4`) não possuem constraint de FK.
