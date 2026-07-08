@@ -14,6 +14,7 @@
 | [Casos de Uso Detalhados](documentos/planoDeTestes/casosDeTeste.md) | Registro dos principais casos de usos utilizados para validar o funcionamento correto da aplicação. |
 | [Arquitetura e Fluxo Completo](documentos/arquitetura/documentacao_arquitetura.md) | Organização da arquitetura da aplicação e fluxo completo, desde a criação da peça jurídica até a geração do documento final. |
 | [Registro das Decisões](documentos/adr) | Registro e documentação das estratégias e decisões de infraestrutura decididas pela equipe visando o correto funcionamento e escalamento do sistema. |
+| [Entregas Realizadas](documentos/adr) | Diretório exclusivamente destinado para armazenar os documentos escritos durante as etapas do projeto integrador. |
 
 ---
 
