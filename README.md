@@ -1,5 +1,24 @@
 # Módulo 05 — Assistente Jurídico da Licitação
 
+🔗 **Link de Acesso à Aplicação do Assistente Jurídico:** https://modulo05-assistente-juridico.vercel.app/
+
+---
+
+## Documentação Técnica
+
+| Documento | Descrição |
+|-----------|-----------|
+| [Integração com outros módulos](documentos/bancoDeDados/integracoes_mod05.md) | Como o Módulo 05 busca editais (Módulo 04), contratos (Módulo 08) e dados da empresa para compor automaticamente a peça jurídica. |
+| [Sugestão de teses jurídicas e IA](documentos/bancoDeDados/sugestao_teses_juridicas.md) | Funcionamento do motor de IA (Google Gemini), recuperação de precedentes jurídicos e geração das teses e do conteúdo da peça. |
+| [Banco de Dados](documentos/bancoDeDados/tabelas_relacionamentos.md) | Estrutura das tabelas, relacionamentos e composição dos elementos do banco de dados do Módulo 05. |
+| [Casos de Uso Detalhados](documentos/planoDeTestes/casosDeTeste.md) | Registro dos principais casos de usos utilizados para validar o funcionamento correto da aplicação. |
+| [Arquitetura e Fluxo Completo](documentos/arquitetura/documentacao_arquitetura.md) | Organização da arquitetura da aplicação e fluxo completo, desde a criação da peça jurídica até a geração do documento final. |
+| [Registro das Decisões](documentos/adr) | Registro e documentação das estratégias e decisões de infraestrutura decididas pela equipe visando o correto funcionamento e escalamento do sistema. |
+
+---
+
+# Descrição Geral do Módulo 05
+
 O **Módulo 05 — Assistente Jurídico da Licitação** tem como objetivo automatizar e otimizar a criação de manifestações jurídicas relacionadas a processos licitatórios públicos, reduzindo o tempo gasto na elaboração manual de documentos administrativos e aumentando a eficiência operacional dos licitantes e fornecedores.
 
 A proposta do módulo surge a partir da necessidade de agilizar atividades que atualmente demandam longos períodos de análise documental, organização de informações e construção manual de peças jurídicas. Processos como elaboração de impugnações, pedidos de esclarecimentos, recursos administrativos e requerimentos contratuais frequentemente exigem a leitura detalhada de editais, atas, contratos e decisões administrativas, tornando o fluxo operacional lento, repetitivo e suscetível a falhas.
@@ -10,9 +29,7 @@ Nesse contexto, o sistema atua como um **assistente jurídico inteligente**, aux
 
 ---
 
-# Objetivos Gerais do Módulo 05
-
-O módulo possui como principais objetivos:
+# Objetivos Principais do Módulo 05
 
 - Automatizar a geração de peças jurídicas;
 - Auxiliar fornecedores e licitantes durante as fases diversas da licitação;
@@ -83,7 +100,7 @@ Etapa voltada ao acompanhamento da execução contratual após o encerramento da
 
 # Integrações Previstas
 
-O módulo também irá operar integrado a outras partes da plataforma.
+O Assistente Jurídico irá compartilhar e integrar informações com outros módulos do sistema.
 
 ## Integrações previstas:
 - **Módulo 04:** análise e resumo automatizado de editais;
@@ -92,10 +109,4 @@ O módulo também irá operar integrado a outras partes da plataforma.
 
 ---
 
-# Documentação Técnica
 
-- [Integração com outros módulos](documentos/README-integracao-modulos.md) — como o M5 busca editais (M4), contratos (M8) e dados da empresa para popular o documento jurídico;
-- [Sugestão de teses jurídicas e IA](documentos/README-sugestao-teses-ia.md) — motor de IA (Google Gemini), busca de precedentes e geração do conteúdo final;
-- [Banco de dados](documentos/bancoDeDados/tabelas_relacionamentos.md) — tabelas `mod5_*`, estruturação e composição dos elementos do banco de dados;
-- [Arquitetura e fluxo completo](documentos/README-arquitetura-fluxo.md) — estrutura do código e o passo a passo da criação da peça até o download.
-- 
