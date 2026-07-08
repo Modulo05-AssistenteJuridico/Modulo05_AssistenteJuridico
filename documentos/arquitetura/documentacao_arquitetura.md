@@ -13,7 +13,9 @@ O Módulo 05 é desenvolvido utilizando arquitetura cliente-servidor com **Next.
 - **IA:** geração de teses, fundamentações e preenchimento do documento.
 - **Supabase:** persistência, autenticação e armazenamento dos arquivos.
 
-# Atributos de Qualidade
+Os componentes nunca acessam diretamente o banco de dados ou a IA, realizando todas as operações por meio das API Routes ou Server Components.
+
+## Atributos de Qualidade
 
 A arquitetura foi projetada priorizando:
 
@@ -40,24 +42,6 @@ A arquitetura foi projetada priorizando:
 | Estilização | Tailwind CSS |
 | Repositório | GitHub (Organização) |
 | Versionamento | Vercel |
-
----
-
-# Arquitetura
-
-A aplicação é organizada nas seguintes camadas:
-
-```text
-Páginas e Componentes
-        ↓
-API Routes
-        ↓
-lib/data e lib/ai
-        ↓
-Supabase e Google Gemini
-```
-
-Os componentes nunca acessam diretamente o banco de dados ou a IA, realizando todas as operações por meio das API Routes ou Server Components.
 
 ---
 
@@ -187,28 +171,6 @@ Após a geração da peça, o usuário pode:
 | `GET /api/pecas/[id]/documento/docx` | Download do DOCX |
 | `GET /api/pecas/[id]/documento/pdf` | Download do PDF |
 | `DELETE /api/pecas/[id]` | Excluir a peça |
-
----
-
-# Ciclo de Vida da Peça
-
-```text
-rascunho
-     │
-     ▼
-gerada
-     │
-     ├── baixada
-     ├── aguardando_julgamento
-     └── julgada
-```
-
-Atualmente o fluxo implementado utiliza os estados:
-
-- `rascunho`
-- `gerada`
-
-Os demais estados permanecem definidos para futuras evoluções.
 
 ---
 
