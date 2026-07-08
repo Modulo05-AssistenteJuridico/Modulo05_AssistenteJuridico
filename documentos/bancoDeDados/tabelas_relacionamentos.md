@@ -1,6 +1,6 @@
-# 🗄️ Banco de Dados - Módulo 05[cite: 1]
+# 🗄️ Banco de Dados - Módulo 05
 
-Resumo da estrutura de banco de dados (PostgreSQL/Supabase) baseada no script de origem `mod5_schema.sql`. Todas as tabelas utilizam o prefixo `mod5_`.
+Resumo da estrutura de banco de dados (PostgreSQL) baseada no script de origem `mod5_schema.sql`. Todas as tabelas utilizam o prefixo `mod5_`.
 
 ## 📌 Padrões e Relacionamentos
 
