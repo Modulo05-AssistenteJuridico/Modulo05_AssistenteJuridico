@@ -10,14 +10,14 @@ Nesse contexto, o sistema atua como um **assistente jurídico inteligente**, aux
 
 ---
 
-# Objetivos do Módulo
+# Objetivos Gerais do Módulo 05
 
 O módulo possui como principais objetivos:
 
 - Automatizar a geração de peças jurídicas;
-- Auxiliar fornecedores e licitantes durante as fases da licitação;
+- Auxiliar fornecedores e licitantes durante as fases diversas da licitação;
 - Organizar informações jurídicas e documentais de forma centralizada;
-- Sugerir categorias, temas e teses jurídicas padronizadas;
+- Sugerir temas e teses jurídicas padronizadas;
 - Garantir maior padronização estrutural das peças jurídicas geradas.
 
 ---
@@ -33,7 +33,7 @@ Entre as funcionalidades previstas para o módulo estão:
 - Armazenamento do histórico de peças jurídicas;
 - Fluxo guiado passo a passo para construção documental;
 - Pré-visualização e edição manual das peças geradas;
-- Integração com módulos auxiliares da plataforma.
+- Integração com módulos auxiliares.
 
 ---
 
@@ -96,5 +96,6 @@ O módulo também irá operar integrado a outras partes da plataforma.
 
 - [Integração com outros módulos](documentos/README-integracao-modulos.md) — como o M5 busca editais (M4), contratos (M8) e dados da empresa para popular o documento jurídico;
 - [Sugestão de teses jurídicas e IA](documentos/README-sugestao-teses-ia.md) — motor de IA (Google Gemini), busca de precedentes e geração do conteúdo final;
-- [Banco de dados](documentos/README-banco-de-dados.md) — tabelas `mod5_*`, relações, índices, triggers e RLS;
+- [Banco de dados](documentos/bancoDeDados/tabelas_relacionamentos.md) — tabelas `mod5_*`, estruturação e composição dos elementos do banco de dados;
 - [Arquitetura e fluxo completo](documentos/README-arquitetura-fluxo.md) — estrutura do código e o passo a passo da criação da peça até o download.
+- 
